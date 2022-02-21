@@ -4,6 +4,7 @@ const cors = require('cors');
 const app = express();
 var mongoose = require('mongoose');
 var bodyParser = require('body-parser')
+const dns = require('dns');
 
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
@@ -17,6 +18,10 @@ const urlSchema = new Schema({
 });
 
 let Url = mongoose.model('Url', urlSchema);
+
+const options = {
+  all:true,
+};
 
 // Basic Configuration
 const port = process.env.PORT || 3000;
@@ -35,7 +40,9 @@ app.get('/api/hello', function(req, res) {
 });
 
 app.route('/api/shorturl').post((function (req, res) {
-
+  dns.lookup(req.body.url, options, (err, addresses) => {
+    if (err) res.json({ error: 'invalid url' })
+  })
   Url.findOne({}, {}, { sort: { 'shortUrl' : -1 } }, function(err, url) {
     var url = new Url({originalUrl: req.body.url, shortUrl: url.shortUrl + 1});
 
@@ -50,7 +57,7 @@ app.route('/api/shorturl').post((function (req, res) {
 app.get('/api/shorturl/:number', function(req, res) {
   Url.findOne({shortUrl: req.params.number}, function (err, url) {
      if (err) return console.log(err);
-     res.json({ original_url : url.originalUrl, short_url : url.shortUrl})
+     res.redirect(301, url.originalUrl);
    });
 });
 
