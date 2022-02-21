@@ -40,7 +40,7 @@ app.get('/api/hello', function(req, res) {
 });
 
 app.route('/api/shorturl').post((function (req, res) {
-  dns.lookup(req.body.url.replace(/^http(s?):\/\//i, ""), options, (err, addresses) => {
+  dns.lookup(req.body.url.replace(/^http(s?):\/\//i, "").replace("/", ""), options, (err, addresses) => {
     if (err) res.json({ error: 'invalid url' })
     else {
       Url.findOne({}, {}, { sort: { 'shortUrl' : -1 } }, function(err, url) {
