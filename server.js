@@ -5,6 +5,7 @@ const app = express();
 var mongoose = require('mongoose');
 var bodyParser = require('body-parser')
 const dns = require('dns');
+const { URL } = require('url');
 
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
@@ -40,8 +41,13 @@ app.get('/api/hello', function(req, res) {
 });
 
 app.route('/api/shorturl').post((function (req, res) {
-  dns.lookup(req.body.url.replace(/^http(s?):\/\//i, "").replace("/", ""), options, (err, addresses) => {
-  console.log(err)  
+  let myURL;
+  try {
+    myURL = new URL(req.body.url);
+  } catch {
+    res.json({ error: 'invalid url' })
+  }
+  dns.lookup(myURL.hostname, options, (err, addresses) => {
   if (err) res.json({ error: 'invalid url' })
     else {
       Url.findOne({}, {}, { sort: { 'shortUrl' : -1 } }, function(err, url) {
