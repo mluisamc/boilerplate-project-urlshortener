@@ -41,6 +41,7 @@ app.get('/api/hello', function(req, res) {
 });
 
 app.route('/api/shorturl').post((function (req, res) {
+  console.log(req.body.url)
   let myURL;
   try {
     myURL = new URL(req.body.url);
